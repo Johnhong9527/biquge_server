@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const config = require('./config');
 // 连接mongodb数据库
 connect();
-const puppeteer = require('puppeteer');
+// const puppeteer = require('puppeteer');
 const log = require('./util/log');
 const _book = require('./controllers/books');
 const _chapter = require('./controllers/chapter');

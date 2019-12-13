@@ -45,6 +45,7 @@ class BookController extends Controller {
     }
   }
 
+  // 获取书籍所有信息
   async getBookInfo() {
     const { ctx } = this;
     const { index, aid } = ctx.query;
@@ -68,6 +69,7 @@ class BookController extends Controller {
     }
   }
 
+  // 创建书籍基本数据
   async create() {
     const { ctx } = this;
     try {
@@ -90,8 +92,8 @@ class BookController extends Controller {
       // 创建书籍信息
       const books = await ctx.model.Book.find({}, { aid: 1 });
       const createBook = await ctx.model.Book.create({
-        length: books.length,
-        aid, title, author
+        index: books.length,
+        aid: Number.parseInt(aid), title, author
       });
       ctx.body = createBook;
     } catch (e) {
@@ -99,6 +101,7 @@ class BookController extends Controller {
     }
   }
 
+  // 删除整本书籍
   async delete() {
     const { ctx } = this;
     try {
@@ -117,6 +120,7 @@ class BookController extends Controller {
     }
   }
 
+  // 编辑单个章节数据，仅限修改title和href
   async editChapters() {
     const { ctx } = this;
     try {
@@ -130,12 +134,6 @@ class BookController extends Controller {
       if (!title || title === '' || !aid || aid === '' || !cid || cid === '' || !href || href === '') {
         throw '参数不为空';
       }
-      // const find = await ctx.model.Book.find({
-      //   'chapters.aid': Number.parseInt(aid),
-      //   'chapters.cid': cid
-      // });
-      // console.log(137);
-      // console.log('length', find.chapters.length);
       const book = await ctx.model.Book.update({
         'chapters.aid': Number.parseInt(aid),
         'chapters.cid': cid,
@@ -146,12 +144,61 @@ class BookController extends Controller {
     }
   }
 
+  // 插入单个章节
+  async insertChapters() {
+    const { ctx } = this;
+    try {
+      /*
+      title: { type: String },
+      aid: { type: Number },
+      cid: { type: Number },
+      href: { type: String }
+      index: { type: Number },*/
+      const { title, aid, cid, href, index } = ctx.query;
+      // 必传项
+      if (!aid || isNaN(aid) || Number.parseInt(aid) < 1 || !cid || isNaN(cid) || Number.parseInt(cid) < 1 || !title || !index || Number.parseInt(index) < 0) {
+        throw '参数错误';
+      }
+      const book = await ctx.model.Book.findOne({ aid });
+      if (index > book.chapters.length) {
+        throw 'index过大';
+      }
+      book.chapters.splice(index, 0, { title, aid: Number.parseInt(aid), cid: Number.parseInt(cid), href });
+      ctx.body = await ctx.model.Book.update({ aid }, { '$set': book });
+    } catch (e) {
+      ctx.body = e;
+    }
+  }
+
+  // 删除单个章节信息
+  async delChapters() {
+    const { ctx } = this;
+    try {
+      const { aid, cid } = ctx.query;
+      const book = await ctx.model.Book.findOne({ aid: Number.parseInt(aid) }, {});
+      let index = util.getChaptersIndex(book.chapters, cid);
+      if (index) {
+        book.chapters.splice(index, 1);
+      } else {
+        throw '参数错误';
+      }
+      ctx.body = await ctx.model.Book.update({ aid }, { '$set': book });
+    } catch (e) {
+      ctx.body = e;
+    }
+  }
+
+  // 修改doc中chapters的数据类型
   async setCidType() {
     const { ctx } = this;
     try {
-      const book = await ctx.model.Book.find({ aid: 10 });
-      console.log(book);
-      ctx.bodu = 'ok';
+      const aid = 10806;
+      const book = await ctx.model.Book.findOne({ aid });
+      book.chapters.map(el => {
+        el.cid = Number.parseInt(el.cid);
+      });
+      ctx.body = await ctx.model.Book.updateOne({ aid }, { '$set': book });
+      // ctx.body = 'ok';
     } catch (e) {
       ctx.body = e;
     }

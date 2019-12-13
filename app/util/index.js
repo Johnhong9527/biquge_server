@@ -153,7 +153,8 @@ function isURLSearchParams(val) {
  * @return {String} The String freed of excess whitespace
  */
 function trim(str) {
-  return str.replace(/^\s*/, '').replace(/\s*$/, '');
+  return str.replace(/^\s*/, '')
+    .replace(/\s*$/, '');
 }
 
 /**
@@ -204,7 +205,7 @@ function forEach(obj, fn) {
   // Force an array if not already something iterable
   if (typeof obj !== 'object') {
     /* eslint no-param-reassign:0*/
-    obj = [obj];
+    obj = [ obj ];
   }
 
   if (isArray(obj)) {
@@ -283,6 +284,21 @@ function deepMerge(/* obj1, obj2, obj3, ... */) {
   return result;
 }
 
+
+function getChaptersIndex(arr, cid) {
+  let i = arr.length;
+  if (!cid || cid === '' || isNaN(cid)) {
+    return false;
+  }
+  cid = Number.parseInt(cid);
+  while (i--) {
+    if (arr[i].cid === cid) {
+      return i;
+    }
+  }
+  return false;
+}
+
 module.exports = {
   isArray,
   isArrayBuffer,
@@ -303,4 +319,5 @@ module.exports = {
   merge,
   deepMerge,
   trim,
+  getChaptersIndex
 };
