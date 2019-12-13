@@ -40,17 +40,16 @@ class BookController extends Controller {
       });
       ctx.body = body;
     } catch (e) {
-      console.log(e);
       ctx.body = e;
     }
   }
 
   // 获取书籍所有信息
-  async getBookInfo() {
+  async getBook() {
     const { ctx } = this;
     const { index, aid } = ctx.query;
     try {
-      if (!index) {
+      if (isNaN(index) || index < 0) {
         throw '请输入index';
       }
       if (isNaN(index)) {
@@ -62,8 +61,7 @@ class BookController extends Controller {
       if (isNaN(aid)) {
         throw 'aid格式错误';
       }
-
-      ctx.body = await ctx.model.Book.find({ index, aid });
+      ctx.body = await ctx.model.Book.findOne({ index, aid });
     } catch (e) {
       ctx.body = e;
     }
@@ -130,14 +128,14 @@ class BookController extends Controller {
       cid: { type: Number },
       href: { type: String },
       * */
-      const { title, aid, cid, href } = ctx.query;
-      if (!title || title === '' || !aid || aid === '' || !cid || cid === '' || !href || href === '') {
+      const { title, aid, cid, href } = ctx.request.body;
+      if (title === '' || isNaN(aid) || aid === '' || isNaN(cid) || cid === '') {
         throw '参数不为空';
       }
       const book = await ctx.model.Book.update({
         'chapters.aid': Number.parseInt(aid),
-        'chapters.cid': cid,
-      }, { '$set': { 'chapters.$.title': title, 'chapters.$.href': href } });
+        'chapters.cid': Number.parseInt(cid),
+      }, { '$set': { 'chapters.$.title': title } });
       ctx.body = book;
     } catch (e) {
       ctx.body = e;

@@ -35,12 +35,19 @@ module.exports = appInfo => {
     },
     csrf: {
       enable: false,
+      ignoreJSON: true
     },
+    // domainWhiteList: '*'
+  };
+  const cors = {
+    origin: '*',
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH'
   };
   return {
     ...config,
     ...userConfig,
     mongoose,
     security,
+    cors
   };
 };

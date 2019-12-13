@@ -1,11 +1,11 @@
 module.exports = app => {
   app.router.get('/books', app.controller.book.index);
+  app.router.get('/book', app.controller.book.getBook);
   app.router.post('/create-book', app.controller.book.create);
   app.router.post('/delete-book', app.controller.book.delete);
   app.router.post('/edit-chapters', app.controller.book.editChapters);
   app.router.post('/insert-chapters', app.controller.book.insertChapters);
   app.router.post('/del-chapters', app.controller.book.delChapters);
-  app.router.get('/book-info', app.controller.book.getBookInfo);
   app.router.post('/set-cid-type', app.controller.book.setCidType);
 };
 /*

@@ -27,11 +27,11 @@ class ChapterController extends Controller {
   async setChapter() {
     const { ctx } = this;
     try {
-      const { index, aid, cid, title, content } = ctx.query;
+      const { index, aid, cid, title, content } = ctx.request.body;
       if (isNaN(index) || isNaN(aid) || isNaN(cid)) {
         throw '参数格式错误';
       }
-      if (!index || !aid || !cid) {
+      if (index < 0 || !aid || !cid) {
         throw '缺少参数';
       }
       let params = {};
