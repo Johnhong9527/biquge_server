@@ -61,8 +61,8 @@ class ChapterController extends Controller {
         index: Number.parseInt(index),
         aid: Number.parseInt(aid),
         cid: Number.parseInt(cid),
-        title: title ? '' : title,
-        content: content ? '' : content,
+        title: !title ? '' : title,
+        content: !content ? '' : content,
       };
       // 查询章节是否存在
       const chapter = await ctx.model.Chapter.find({ index: params.index, aid: params.aid, cid: params.cid });
@@ -74,8 +74,9 @@ class ChapterController extends Controller {
       if (JSON.stringify(book) === '[]') {
         throw '该书籍不存在';
       }
-      // ctx.body = 'ok';
-      ctx.body = await ctx.model.Chapter.create({ params });
+      const newChapter = await new ctx.model.Chapter(params);
+      ctx.body = await newChapter.save();
+      // ctx.body = params;
     } catch (e) {
       ctx.body = e;
     }

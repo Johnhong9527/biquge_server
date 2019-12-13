@@ -91,11 +91,11 @@ class BookController extends Controller {
       }
       // 创建书籍信息
       const books = await ctx.model.Book.find({}, { aid: 1 });
-      const createBook = await ctx.model.Book.create({
+      const createBook = await new ctx.model.Book({
         index: books.length,
         aid: Number.parseInt(aid), title, author
       });
-      ctx.body = createBook;
+      ctx.body = await createBook.save();
     } catch (e) {
       ctx.body = e;
     }
