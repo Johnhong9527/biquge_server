@@ -122,16 +122,36 @@ class BookController extends Controller {
     try {
       /*
       title: { type: String },
-      path: { type: String },
       aid: { type: Number },
       cid: { type: Number },
       href: { type: String },
       * */
-      const { title, path, aid, cid, href } = ctx.query;
-      if (!title || title === '' || !path || path === '' || !aid || aid === '' || !cid || cid === '' || !href || href === '') {
+      const { title, aid, cid, href } = ctx.query;
+      if (!title || title === '' || !aid || aid === '' || !cid || cid === '' || !href || href === '') {
         throw '参数不为空';
       }
-      ctx.body = 'edit chapters';
+      // const find = await ctx.model.Book.find({
+      //   'chapters.aid': Number.parseInt(aid),
+      //   'chapters.cid': cid
+      // });
+      // console.log(137);
+      // console.log('length', find.chapters.length);
+      const book = await ctx.model.Book.update({
+        'chapters.aid': Number.parseInt(aid),
+        'chapters.cid': cid,
+      }, { '$set': { 'chapters.$.title': title, 'chapters.$.href': href } });
+      ctx.body = book;
+    } catch (e) {
+      ctx.body = e;
+    }
+  }
+
+  async setCidType() {
+    const { ctx } = this;
+    try {
+      const book = await ctx.model.Book.find({ aid: 10 });
+      console.log(book);
+      ctx.bodu = 'ok';
     } catch (e) {
       ctx.body = e;
     }

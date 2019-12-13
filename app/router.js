@@ -11,6 +11,7 @@ module.exports = app => {
   router.post('/create-book', controller.book.create);
   router.post('/delete-book', controller.book.delete);
   router.post('/edit-chapters', controller.book.editChapters);
+  router.post('/set-cid-type', controller.book.setCidType);
   router.get('/book-info', controller.book.getBookInfo);
   router.get('/get-chapter', controller.chapter.index);
   router.post('/set-chapter', controller.chapter.setChapter);
