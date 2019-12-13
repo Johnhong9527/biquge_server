@@ -1,5 +1,33 @@
-### 创建mongo
+# biquge_txt
+
+
+
+## QuickStart
+
+<!-- add docs here for user -->
+
+see [egg docs][egg] for more detail.
+
+### Development
+
 ```bash
-docker run -d -p 27017:27017 -v /home/feishu/Data/docker/storybl_mogodb/mongo_configdb:/data/configdb -v /home/feishu/Data/docker/storybl_mogodb/mongo_db:/data/db --name storybl_mogodb mongo
+$ npm i
+$ npm run dev
+$ open http://localhost:7001/
 ```
 
+### Deploy
+
+```bash
+$ npm start
+$ npm stop
+```
+
+### npm scripts
+
+- Use `npm run lint` to check code style.
+- Use `npm test` to run unit test.
+- Use `npm run autod` to auto detect dependencies upgrade, see [autod](https://www.npmjs.com/package/autod) for more detail.
+
+
+[egg]: https://eggjs.org
