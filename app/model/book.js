@@ -2,7 +2,7 @@ module.exports = app => {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
   /**
-   *  * 书名 --> title str
+   * 书名 --> title str
    * 作者 --> author str
    * 书籍ID --> aid num
    * 最后更新时间 --> latest update str

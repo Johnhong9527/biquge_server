@@ -22,7 +22,9 @@ class BookController extends Controller {
         throw 'pageSize只能为数字';
       }
       currentPage = currentPage === 1 ? -1 : (currentPage - 1) * pageSize;
-      let books = await ctx.model.Book.find({ index: { $gt: currentPage } }).sort({ 'index': 1 }).limit(Number.parseInt(pageSize));
+      let books = await ctx.model.Book.find({ index: { $gt: currentPage } })
+        .sort({ 'index': 1 })
+        .limit(Number.parseInt(pageSize));
       let body = [];
       books.forEach(el => {
         body.push({
@@ -61,6 +63,75 @@ class BookController extends Controller {
       }
 
       ctx.body = await ctx.model.Book.find({ index, aid });
+    } catch (e) {
+      ctx.body = e;
+    }
+  }
+
+  async create() {
+    const { ctx } = this;
+    try {
+      /* 书名 --> title str
+      * 作者 --> author str
+      * 书籍ID --> aid num
+      */
+      const { title, author, aid } = ctx.query;
+      if (isNaN(aid) || aid < 1) {
+        throw 'aid只能为大于0的整数';
+      }
+      if (!aid) {
+        throw 'aid为必传参数';
+      }
+      // 查询aid是否存在，存在返回数据重复
+      const findAid = await ctx.model.Book.find({ aid });
+      if (findAid.length > 0) {
+        throw '书籍已存在';
+      }
+      // 创建书籍信息
+      const books = await ctx.model.Book.find({}, { aid: 1 });
+      const createBook = await ctx.model.Book.create({
+        length: books.length,
+        aid, title, author
+      });
+      ctx.body = createBook;
+    } catch (e) {
+      ctx.body = e;
+    }
+  }
+
+  async delete() {
+    const { ctx } = this;
+    try {
+      const { aid } = ctx.query;
+      if (isNaN(aid) || aid < 1) {
+        throw 'aid只能为大于0的整数';
+      }
+      if (!aid) {
+        throw 'aid为必传参数';
+      }
+      const remove = await ctx.model.Book.remove({ aid });
+      ctx.body = remove;
+
+    } catch (e) {
+      ctx.body = e;
+    }
+  }
+
+  async editChapters() {
+    const { ctx } = this;
+    try {
+      /*
+      title: { type: String },
+      path: { type: String },
+      aid: { type: Number },
+      cid: { type: Number },
+      href: { type: String },
+      * */
+      const { title, path, aid, cid, href } = ctx.query;
+      if (!title || title === '' || !path || path === '' || !aid || aid === '' || !cid || cid === '' || !href || href === '') {
+        throw '参数不为空';
+      }
+      ctx.body = 'edit chapters';
     } catch (e) {
       ctx.body = e;
     }
