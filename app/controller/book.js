@@ -75,7 +75,7 @@ class BookController extends Controller {
       * 作者 --> author str
       * 书籍ID --> aid num
       */
-      const { title, author, aid } = ctx.query;
+      const { title, author, aid } = ctx.request.body;
       if (isNaN(aid) || aid < 1) {
         throw 'aid只能为大于0的整数';
       }
@@ -103,16 +103,14 @@ class BookController extends Controller {
   async delete() {
     const { ctx } = this;
     try {
-      const { aid } = ctx.query;
-      if (isNaN(aid) || aid < 1) {
+      const { aid, index } = ctx.request.body;
+      if (isNaN(aid) || aid < 1 || isNaN(index) || index < 0) {
         throw 'aid只能为大于0的整数';
       }
       if (!aid) {
         throw 'aid为必传参数';
       }
-      const remove = await ctx.model.Book.remove({ aid });
-      ctx.body = remove;
-
+      ctx.body = await ctx.model.Book.remove({ aid, index });
     } catch (e) {
       ctx.body = e;
     }
@@ -152,7 +150,7 @@ class BookController extends Controller {
       cid: { type: Number },
       href: { type: String }
       index: { type: Number },*/
-      const { title, aid, cid, href, index } = ctx.query;
+      const { title, aid, cid, href, index } = ctx.request.body;
       // 必传项
       if (!aid || isNaN(aid) || Number.parseInt(aid) < 1 || !cid || isNaN(cid) || Number.parseInt(cid) < 1 || !title || !index || Number.parseInt(index) < 0) {
         throw '参数错误';
@@ -172,10 +170,10 @@ class BookController extends Controller {
   async delChapters() {
     const { ctx } = this;
     try {
-      const { aid, cid } = ctx.query;
+      const { aid, cid } = ctx.request.body;
       const book = await ctx.model.Book.findOne({ aid: Number.parseInt(aid) }, {});
       let index = util.getChaptersIndex(book.chapters, cid);
-      if (index) {
+      if (index > -1) {
         book.chapters.splice(index, 1);
       } else {
         throw '参数错误';
