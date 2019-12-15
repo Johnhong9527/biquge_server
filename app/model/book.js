@@ -2,7 +2,9 @@ module.exports = app => {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
   /**
+   * [BooksSchema description]
    * 书名 --> title str
+   * 来源 --> source str (各大小说网站)
    * 作者 --> author str
    * 书籍ID --> aid num
    * 最后更新时间 --> latest update str
@@ -14,10 +16,11 @@ module.exports = app => {
    *   章节 -->
    *     章节id
    *     章节名title
-   * @type {module:mongoose.Schema<any>}
+   * @type {Schema}
    */
-  const BookSchema = new Schema({
+  const BooksSchema = new Schema({
     title: { type: String },
+    source: { type: String },
     author: { type: String },
     aid: { type: Number },
     lastUpdate: { type: Number },

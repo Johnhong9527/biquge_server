@@ -11,6 +11,5 @@ module.exports = app => {
     index: { type: Number },
     content: { type: String },
   });
-
   return mongoose.model('Chapter', ChapterSchema);
 };

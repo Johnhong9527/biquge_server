@@ -95,7 +95,7 @@ class ChapterController extends Controller {
     try {
       const { index, aid, cid } = ctx.request.body;
       if (!index || isNaN(index) || !aid || isNaN(aid) || !cid || isNaN(cid)) {
-        throw '参数错误';
+        throw new Error('参数错误');
       }
       ctx.body = await ctx.model.Chapter.remove({
         index: Number.parseInt(index),
