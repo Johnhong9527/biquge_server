@@ -22,11 +22,15 @@ module.exports = app => {
     title: { type: String },
     source: { type: String },
     author: { type: String },
+    avatar: { type: String },
+    tag: { type: String },
+    tag_url: { type: String },
     aid: { type: Number },
     lastUpdate: { type: Number },
     status: { type: Number },
     intro: { type: String },
     index: { type: Number },
+    href: { type: String },
     chapters: {
       type: Array,
       title: { type: String },
@@ -37,5 +41,5 @@ module.exports = app => {
     },
   });
 
-  return mongoose.model('Book', BookSchema);
+  return mongoose.model('Books', BooksSchema);
 };

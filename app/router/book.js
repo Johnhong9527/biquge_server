@@ -1,4 +1,4 @@
-module.exports = app => {
+module.exports = (app) => {
   app.router.get('/books', app.controller.book.index);
   app.router.get('/book', app.controller.book.getBook);
   app.router.post('/create-book', app.controller.book.create);

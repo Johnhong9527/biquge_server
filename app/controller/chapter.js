@@ -7,18 +7,21 @@ class ChapterController extends Controller {
   async index() {
     const { ctx } = this;
     try {
-      const { index, aid, cid } = ctx.query;
-      if (isNaN(index) || isNaN(aid) || isNaN(cid)) {
+      let { index, aid, cid } = ctx.request.body;
+
+      if (isNaN(aid) || isNaN(cid)) {
         throw '参数格式错误';
       }
-      if (!index || !aid || !cid) {
+      if (!aid || !cid) {
         throw '缺少参数';
       }
-      ctx.body = await ctx.model.Chapter.findOne({
-        index: Number.parseInt(index),
-        aid: Number.parseInt(aid),
-        cid: Number.parseInt(cid)
+      aid = Number.parseInt(aid);
+      cid = Number.parseInt(cid);
+      const chapter = await ctx.model.Chapter.findOne({
+        aid,
+        cid,
       });
+      ctx.body = chapter;
     } catch (e) {
       ctx.body = e;
     }
@@ -28,10 +31,10 @@ class ChapterController extends Controller {
     const { ctx } = this;
     try {
       const { index, aid, cid, title, content } = ctx.request.body;
-      if (isNaN(index) || isNaN(aid) || isNaN(cid)) {
+      if (isNaN(aid) || isNaN(cid)) {
         throw '参数格式错误';
       }
-      if (index < 0 || !aid || !cid) {
+      if (!aid || !cid) {
         throw '缺少参数';
       }
       let params = {};
@@ -41,7 +44,22 @@ class ChapterController extends Controller {
       if (content && content !== '') {
         params.content = content;
       }
-      ctx.body = await ctx.model.Chapter.updateOne({ index, aid, cid }, { '$set': params });
+
+      await ctx.model.Chapter.updateOne(
+        {
+          aid: Number.parseInt(aid),
+          cid: Number.parseInt(cid),
+        },
+        { $set: { title, content } },
+      );
+      await ctx.model.Book.updateOne(
+        {
+          'chapters.aid': Number.parseInt(aid),
+          'chapters.cid': Number.parseInt(cid),
+        },
+        { $set: { 'chapters.$.title': title } },
+      );
+      ctx.body = 'ok';
     } catch (e) {
       ctx.body = e;
     }
@@ -53,9 +71,13 @@ class ChapterController extends Controller {
       const { book_index, index, aid, cid, title, content } = ctx.request.body;
 
       if (
-        isNaN(index) || Number.parseInt(index) < 0 ||
-        isNaN(aid) || Number.parseInt(aid) < 1 ||
-        isNaN(cid) || Number.parseInt(cid) < 1) {
+        isNaN(index) ||
+        Number.parseInt(index) < 0 ||
+        isNaN(aid) ||
+        Number.parseInt(aid) < 1 ||
+        isNaN(cid) ||
+        Number.parseInt(cid) < 1
+      ) {
         throw '参数错误';
       }
       if (!index || !aid || !cid) {
@@ -69,13 +91,19 @@ class ChapterController extends Controller {
         content: !content ? '' : content,
       };
       // 查询章节是否存在
-      const chapter = await ctx.model.Chapter.find({ index: params.index, aid: params.aid, cid: params.cid });
-      console.log(chapter);
+      const chapter = await ctx.model.Chapter.find({
+        index: params.index,
+        aid: params.aid,
+        cid: params.cid,
+      });
       if (JSON.stringify(chapter) !== '[]') {
         throw '该章节已存在';
       }
       // 查询书籍数据是否存在
-      let book = await ctx.model.Book.find({ index: params.index, aid: params.aid });
+      let book = await ctx.model.Book.find({
+        index: params.index,
+        aid: params.aid,
+      });
       book = JSON.stringify(book);
       if (book === '[]') {
         throw '该书籍不存在';

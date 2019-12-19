@@ -15,16 +15,25 @@ class BookController extends Controller {
         currentPage = 1;
         pageSize = 10;
       }
+
       if (isNaN(currentPage)) {
-        throw 'currentPage只能为数字';
+        throw new Error('currentPage只能为数字');
+      } else {
+        currentPage = Number.parseInt(currentPage);
       }
       if (isNaN(pageSize)) {
-        throw 'pageSize只能为数字';
+        throw new Error('pageSize只能为数字');
+      } else {
+        pageSize = Number.parseInt(pageSize);
       }
-      currentPage = currentPage === 1 ? -1 : (currentPage - 1) * pageSize;
-      let books = await ctx.model.Book.find({ index: { $gt: currentPage } })
-        .sort({ 'index': 1 })
-        .limit(Number.parseInt(pageSize));
+      const count = await ctx.model.Book.countDocuments({ source: '笔趣阁' });
+      // currentPage = currentPage < 3 ? 5 : (currentPage - 1) * pageSize;
+      // currentPage = currentPage === 1 ? 8 : (currentPage-1) * pageSize + 8;
+      currentPage = (currentPage - 1) * pageSize + 8;
+      let books = await ctx.model.Book.find({
+        index: { $gt: currentPage },
+        source: '笔趣阁',
+      }).limit(pageSize);
       let body = [];
       books.forEach(el => {
         body.push({
@@ -38,7 +47,10 @@ class BookController extends Controller {
           length: el.chapters.length,
         });
       });
-      ctx.body = body;
+      ctx.body = {
+        total: count,
+        data: body,
+      };
     } catch (e) {
       ctx.body = e;
     }
@@ -47,21 +59,24 @@ class BookController extends Controller {
   // 获取书籍所有信息
   async getBook() {
     const { ctx } = this;
-    const { index, aid } = ctx.query;
     try {
-      if (isNaN(index) || index < 0) {
-        throw '请输入index';
-      }
-      if (isNaN(index)) {
-        throw 'index格式错误';
-      }
-      if (!aid) {
-        throw '请输入aid';
-      }
-      if (isNaN(aid)) {
-        throw 'aid格式错误';
-      }
-      ctx.body = await ctx.model.Book.findOne({ index, aid });
+      // currentPage    当前页数
+      // pageSize       每页显示条目个数
+      let { currentPage = 2, pageSize = 5, index, aid } = ctx.query;
+      /*if (!util.isNumber(currentPage)) throw new Error('currentPage参数错误');
+      if (!util.isNumber(pageSize)) throw new Error('pageSize参数错误');
+      if (!util.isNumber(index)) throw new Error('index参数错误');
+      if (!util.isNumber(aid)) throw new Error('aid参数错误');*/
+      const book = await ctx.model.Book.findOne({ index, aid });
+      const total = book.chapters.length;
+      book.chapters = book.chapters.splice(
+        (currentPage - 1) * pageSize,
+        pageSize,
+      );
+      ctx.body = {
+        ...book._doc,
+        total,
+      };
     } catch (e) {
       ctx.body = e;
     }
@@ -72,9 +87,9 @@ class BookController extends Controller {
     const { ctx } = this;
     try {
       /* 书名 --> title str
-      * 作者 --> author str
-      * 书籍ID --> aid num
-      */
+       * 作者 --> author str
+       * 书籍ID --> aid num
+       */
       const { title, author, aid } = ctx.request.body;
       if (isNaN(aid) || aid < 1) {
         throw 'aid只能为大于0的整数';
@@ -91,7 +106,9 @@ class BookController extends Controller {
       const books = await ctx.model.Book.find({}, { aid: 1 });
       const createBook = await new ctx.model.Book({
         index: books.length,
-        aid: Number.parseInt(aid), title, author
+        aid: Number.parseInt(aid),
+        title,
+        author,
       });
       ctx.body = await createBook.save();
     } catch (e) {
@@ -126,14 +143,28 @@ class BookController extends Controller {
       cid: { type: Number },
       href: { type: String },
       * */
-      const { title, aid, cid, href } = ctx.request.body;
-      if (title === '' || isNaN(aid) || aid === '' || isNaN(cid) || cid === '') {
+      let { title, aid, cid, href } = ctx.request.body;
+
+      if (
+        title === '' ||
+        isNaN(aid) ||
+        aid === '' ||
+        isNaN(cid) ||
+        cid === ''
+      ) {
         throw '参数不为空';
       }
-      const book = await ctx.model.Book.update({
-        'chapters.aid': Number.parseInt(aid),
-        'chapters.cid': Number.parseInt(cid),
-      }, { '$set': { 'chapters.$.title': title } });
+      const book = await ctx.model.Book.update(
+        {
+          'chapters.aid': Number.parseInt(aid),
+          'chapters.cid': Number.parseInt(cid),
+        },
+        { $set: { 'chapters.$.title': title } },
+      );
+      await ctx.model.Chapter.updateOne(
+        { index, aid, cid },
+        { $set: { title } },
+      );
       ctx.body = book;
     } catch (e) {
       ctx.body = e;
@@ -152,15 +183,30 @@ class BookController extends Controller {
       index: { type: Number },*/
       const { title, aid, cid, href, index } = ctx.request.body;
       // 必传项
-      if (!aid || isNaN(aid) || Number.parseInt(aid) < 1 || !cid || isNaN(cid) || Number.parseInt(cid) < 1 || !title || !index || Number.parseInt(index) < 0) {
+      if (
+        !aid ||
+        isNaN(aid) ||
+        Number.parseInt(aid) < 1 ||
+        !cid ||
+        isNaN(cid) ||
+        Number.parseInt(cid) < 1 ||
+        !title ||
+        !index ||
+        Number.parseInt(index) < 0
+      ) {
         throw '参数错误';
       }
       const book = await ctx.model.Book.findOne({ aid });
       if (index > book.chapters.length) {
         throw 'index过大';
       }
-      book.chapters.splice(index, 0, { title, aid: Number.parseInt(aid), cid: Number.parseInt(cid), href });
-      ctx.body = await ctx.model.Book.update({ aid }, { '$set': book });
+      book.chapters.splice(index, 0, {
+        title,
+        aid: Number.parseInt(aid),
+        cid: Number.parseInt(cid),
+        href,
+      });
+      ctx.body = await ctx.model.Book.update({ aid }, { $set: book });
     } catch (e) {
       ctx.body = e;
     }
@@ -171,14 +217,17 @@ class BookController extends Controller {
     const { ctx } = this;
     try {
       const { aid, cid } = ctx.request.body;
-      const book = await ctx.model.Book.findOne({ aid: Number.parseInt(aid) }, {});
+      const book = await ctx.model.Book.findOne(
+        { aid: Number.parseInt(aid) },
+        {},
+      );
       let index = util.getChaptersIndex(book.chapters, cid);
       if (index > -1) {
         book.chapters.splice(index, 1);
       } else {
         throw '参数错误';
       }
-      ctx.body = await ctx.model.Book.update({ aid }, { '$set': book });
+      ctx.body = await ctx.model.Book.update({ aid }, { $set: book });
     } catch (e) {
       ctx.body = e;
     }
@@ -193,7 +242,7 @@ class BookController extends Controller {
       book.chapters.map(el => {
         el.cid = Number.parseInt(el.cid);
       });
-      ctx.body = await ctx.model.Book.updateOne({ aid }, { '$set': book });
+      ctx.body = await ctx.model.Book.updateOne({ aid }, { $set: book });
       // ctx.body = 'ok';
     } catch (e) {
       ctx.body = e;
