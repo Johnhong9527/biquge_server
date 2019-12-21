@@ -114,11 +114,11 @@ class ChapterController extends Controller {
         content,
         href,
       } = ctx.request.body;
+      // cid = Date.parse(new Date()) / 1000 + aid;
+      // cid = aid + index;
       if (
         isNaN(book_index) ||
         Number.parseInt(book_index) < 0 ||
-        isNaN(index) ||
-        Number.parseInt(index) < 0 ||
         isNaN(aid) ||
         Number.parseInt(aid) < 1 ||
         isNaN(cid) ||
@@ -126,12 +126,11 @@ class ChapterController extends Controller {
       ) {
         throw new Error('参数错误');
       }
-      if (!book_index || !index || !aid || !cid) {
+      if (!book_index || !aid || !cid) {
         throw new Error('缺少参数');
       }
 
       book_index = Number.parseInt(book_index);
-      index = Number.parseInt(index);
       aid = Number.parseInt(aid);
       cid = Number.parseInt(cid);
 
@@ -139,6 +138,7 @@ class ChapterController extends Controller {
       const chapter = await ctx.model.Chapter.find({
         // index: book_index,
         aid,
+        cid,
         title,
       });
       // 判断章节是否存在
@@ -151,20 +151,26 @@ class ChapterController extends Controller {
         index: book_index,
         aid,
       });
-      // 查询章节索引是否过大过小
-      if (index > book.chapters.length) {
-        throw new Error('index过大');
-      }
-      if (index < 0) {
-        throw new Error('index小于0');
-      }
       // console.log(book);
       if (JSON.stringify(book) === '{}') {
         throw new Error('该书籍不存在');
       }
+      // console.log('index', index);
+      // 设置新的cid
+      let chapterIndex = -1;
 
+      for (var i = book.chapters.length - 1; i >= 0; i--) {
+        if (book.chapters[i].cid === cid) {
+          chapterIndex = i;
+        }
+      }
+      cid = book.chapters.length + aid;
       // book文档中插入字段
-      book.chapters.splice(index, 0, {
+
+      // console.log('chapterIndex', chapterIndex);
+      // ctx.body = 'ok';
+
+      book.chapters.splice(index > 0 ? chapterIndex + 1 : chapterIndex, 0, {
         title,
         aid,
         cid,
@@ -183,14 +189,9 @@ class ChapterController extends Controller {
         content,
         href,
       });
-      newChapter.save();
-      ctx.body = 'ok';
-
-      // ctx.body = params;
-      // console.log(params);
-      // ctx.body = 'ok';
+      ctx.body = await newChapter.save();
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       ctx.body = e.message;
     }
   }
@@ -198,12 +199,33 @@ class ChapterController extends Controller {
   async delChapter() {
     const { ctx } = this;
     try {
-      const { index, aid, cid } = ctx.request.body;
+      let { index, aid, cid } = ctx.request.body;
       if (!index || isNaN(index) || !aid || isNaN(aid) || !cid || isNaN(cid)) {
         throw new Error('参数错误');
       }
+      index = Number.parseInt(index);
+      aid = Number.parseInt(aid);
+      cid = Number.parseInt(cid);
+      let chapter_index = -1;
+      const book = await ctx.model.Book.findOne({ index, aid });
+      if (JSON.stringify(book) === '{}') {
+        throw new Error('该书籍不存在');
+      }
+      // 删除书籍中的章节数据
+      for (var i = 0; i < book.chapters.length; i++) {
+        if (book.chapters[i].cid === cid) {
+          book.chapters.splice(i, 1);
+          const r = await ctx.model.Book.updateOne(
+            { index, aid },
+            {
+              $set: book,
+            },
+          );
+          // console.log(r);
+        }
+      }
+
       ctx.body = await ctx.model.Chapter.remove({
-        index: Number.parseInt(index),
         aid: Number.parseInt(aid),
         cid: Number.parseInt(cid),
       });
