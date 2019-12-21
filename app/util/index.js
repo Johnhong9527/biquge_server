@@ -27,7 +27,7 @@ function isArrayBuffer(val) {
  * @return {boolean} True if value is an FormData, otherwise false
  */
 function isFormData(val) {
-  return (typeof FormData !== 'undefined') && (val instanceof FormData);
+  return typeof FormData !== 'undefined' && val instanceof FormData;
 }
 
 /**
@@ -38,10 +38,10 @@ function isFormData(val) {
  */
 function isArrayBufferView(val) {
   let result;
-  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
+  if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView) {
     result = ArrayBuffer.isView(val);
   } else {
-    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+    result = val && val.buffer && val.buffer instanceof ArrayBuffer;
   }
   return result;
 }
@@ -143,7 +143,9 @@ function isStream(val) {
  * @return {boolean} True if value is a URLSearchParams object, otherwise false
  */
 function isURLSearchParams(val) {
-  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
+  return (
+    typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams
+  );
 }
 
 /**
@@ -153,8 +155,7 @@ function isURLSearchParams(val) {
  * @return {String} The String freed of excess whitespace
  */
 function trim(str) {
-  return str.replace(/^\s*/, '')
-    .replace(/\s*$/, '');
+  return str.replace(/^\s*/, '').replace(/\s*$/, '');
 }
 
 /**
@@ -173,15 +174,15 @@ function trim(str) {
  *  navigator.product -> 'NativeScript' or 'NS'
  */
 function isStandardBrowserEnv() {
-  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' ||
-    navigator.product === 'NativeScript' ||
-    navigator.product === 'NS')) {
+  if (
+    typeof navigator !== 'undefined' &&
+    (navigator.product === 'ReactNative' ||
+      navigator.product === 'NativeScript' ||
+      navigator.product === 'NS')
+  ) {
     return false;
   }
-  return (
-    typeof window !== 'undefined' &&
-    typeof document !== 'undefined'
-  );
+  return typeof window !== 'undefined' && typeof document !== 'undefined';
 }
 
 /**
@@ -205,7 +206,7 @@ function forEach(obj, fn) {
   // Force an array if not already something iterable
   if (typeof obj !== 'object') {
     /* eslint no-param-reassign:0*/
-    obj = [ obj ];
+    obj = [obj];
   }
 
   if (isArray(obj)) {
@@ -284,7 +285,6 @@ function deepMerge(/* obj1, obj2, obj3, ... */) {
   return result;
 }
 
-
 function getChaptersIndex(arr, cid) {
   let i = arr.length;
   if (!cid || cid === '' || isNaN(cid)) {
@@ -297,6 +297,11 @@ function getChaptersIndex(arr, cid) {
     }
   }
   return false;
+}
+
+// Error
+function error(message) {
+  throw new Error(message);
 }
 
 module.exports = {
@@ -319,5 +324,6 @@ module.exports = {
   merge,
   deepMerge,
   trim,
-  getChaptersIndex
+  getChaptersIndex,
+  error,
 };

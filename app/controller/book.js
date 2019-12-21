@@ -52,7 +52,7 @@ class BookController extends Controller {
         data: body,
       };
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 
@@ -78,7 +78,17 @@ class BookController extends Controller {
         total,
       };
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
+    }
+  }
+  async nextBook() {
+    const { ctx } = this;
+    try {
+      let { index = 0 } = ctx.query;
+      const book = await ctx.model.Book.findOne({ index });
+      ctx.body = book.aid;
+    } catch (e) {
+      ctx.body = e.message;
     }
   }
 
@@ -92,15 +102,15 @@ class BookController extends Controller {
        */
       const { title, author, aid } = ctx.request.body;
       if (isNaN(aid) || aid < 1) {
-        throw 'aid只能为大于0的整数';
+        throw new Error('aid只能为大于0的整数');
       }
       if (!aid) {
-        throw 'aid为必传参数';
+        throw new Error('aid为必传参数');
       }
       // 查询aid是否存在，存在返回数据重复
       const findAid = await ctx.model.Book.find({ aid });
       if (findAid.length > 0) {
-        throw '书籍已存在';
+        throw new Error('书籍已存在');
       }
       // 创建书籍信息
       const books = await ctx.model.Book.find({}, { aid: 1 });
@@ -112,7 +122,7 @@ class BookController extends Controller {
       });
       ctx.body = await createBook.save();
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 
@@ -122,14 +132,14 @@ class BookController extends Controller {
     try {
       const { aid, index } = ctx.request.body;
       if (isNaN(aid) || aid < 1 || isNaN(index) || index < 0) {
-        throw 'aid只能为大于0的整数';
+        throw new Error('aid只能为大于0的整数');
       }
       if (!aid) {
-        throw 'aid为必传参数';
+        throw new Error('aid为必传参数');
       }
       ctx.body = await ctx.model.Book.remove({ aid, index });
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 
@@ -152,7 +162,7 @@ class BookController extends Controller {
         isNaN(cid) ||
         cid === ''
       ) {
-        throw '参数不为空';
+        throw new Error('参数不为空');
       }
       const book = await ctx.model.Book.update(
         {
@@ -167,7 +177,7 @@ class BookController extends Controller {
       );
       ctx.body = book;
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 
@@ -194,11 +204,11 @@ class BookController extends Controller {
         !index ||
         Number.parseInt(index) < 0
       ) {
-        throw '参数错误';
+        throw new Error('参数错误');
       }
       const book = await ctx.model.Book.findOne({ aid });
       if (index > book.chapters.length) {
-        throw 'index过大';
+        throw new Error('index过大');
       }
       book.chapters.splice(index, 0, {
         title,
@@ -208,7 +218,7 @@ class BookController extends Controller {
       });
       ctx.body = await ctx.model.Book.update({ aid }, { $set: book });
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 
@@ -225,11 +235,11 @@ class BookController extends Controller {
       if (index > -1) {
         book.chapters.splice(index, 1);
       } else {
-        throw '参数错误';
+        throw new Error('参数错误');
       }
       ctx.body = await ctx.model.Book.update({ aid }, { $set: book });
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 
@@ -243,9 +253,8 @@ class BookController extends Controller {
         el.cid = Number.parseInt(el.cid);
       });
       ctx.body = await ctx.model.Book.updateOne({ aid }, { $set: book });
-      // ctx.body = 'ok';
     } catch (e) {
-      ctx.body = e;
+      ctx.body = e.message;
     }
   }
 }
