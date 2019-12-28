@@ -10,7 +10,7 @@ module.exports = appInfo => {
    * built-in config
    * @type {Egg.EggAppConfig}
    **/
-  const config = exports = {};
+  const config = (exports = {});
 
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1576142606366_7379';
@@ -23,7 +23,7 @@ module.exports = appInfo => {
     // myAppName: 'egg',
   };
   const mongoose = {
-    url: 'mongodb://127.0.0.1:27017/xxxbz',
+    url: 'mongodb://127.0.0.1:27017/biquge',
     options: {
       useUnifiedTopology: true,
     },
@@ -35,19 +35,19 @@ module.exports = appInfo => {
     },
     csrf: {
       enable: false,
-      ignoreJSON: true
+      ignoreJSON: true,
     },
     // domainWhiteList: '*'
   };
   const cors = {
     origin: '*',
-    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH'
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
   };
   return {
     ...config,
     ...userConfig,
     mongoose,
     security,
-    cors
+    cors,
   };
 };

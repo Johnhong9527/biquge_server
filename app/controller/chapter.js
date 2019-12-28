@@ -8,7 +8,7 @@ class ChapterController extends Controller {
     const { ctx } = this;
     try {
       let { index, aid, cid } = ctx.request.body;
-
+      console.log(ctx.request.body);
       if (isNaN(aid) || isNaN(cid)) {
         throw new Error('参数格式错误');
       }

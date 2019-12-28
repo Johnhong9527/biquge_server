@@ -29,7 +29,7 @@ class BookController extends Controller {
       const count = await ctx.model.Book.countDocuments({ source: '笔趣阁' });
       // currentPage = currentPage < 3 ? 5 : (currentPage - 1) * pageSize;
       // currentPage = currentPage === 1 ? 8 : (currentPage-1) * pageSize + 8;
-      currentPage = (currentPage - 1) * pageSize + 8;
+      currentPage = (currentPage - 1) * pageSize;
       let books = await ctx.model.Book.find({
         index: { $gt: currentPage },
         source: '笔趣阁',
