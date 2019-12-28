@@ -17,8 +17,9 @@ class ChapterController extends Controller {
       }
       aid = Number.parseInt(aid);
       cid = Number.parseInt(cid);
+      const book = await ctx.model.Book.findOne({ aid, index });
       const chapter = await ctx.model.Chapter.findOne({
-        aid,
+        book_id: book.open_id,
         cid,
       });
       if (!chapter) {
@@ -52,13 +53,13 @@ class ChapterController extends Controller {
       let chapters = book.chapters;
       for (let i = 0; i < chapters.length; i++) {
         if (chapters[i].cid === cid) {
-          newAid = next > 0 ? chapters[i + 1].cid : chapters[i - 1].cid;
+          newCid = next > 0 ? chapters[i + 1].cid : chapters[i - 1].cid;
         }
       }
-      if (newAid < 0) {
+      if (newCid < 0) {
         throw new Error('no next chapter');
       }
-      ctx.body = newAid;
+      ctx.body = newCid;
     } catch (e) {
       ctx.body = e.message;
     }
@@ -81,10 +82,10 @@ class ChapterController extends Controller {
       if (content && content !== '') {
         params.content = content;
       }
-
+      const book = await ctx.model.Book.findOne({ index, aid });
       await ctx.model.Chapter.updateOne(
         {
-          aid: Number.parseInt(aid),
+          book_id: book.open_id,
           cid: Number.parseInt(cid),
         },
         { $set: { title, content } },
