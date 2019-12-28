@@ -8,7 +8,6 @@ class ChapterController extends Controller {
     const { ctx } = this;
     try {
       let { index, aid, cid } = ctx.request.body;
-      console.log(ctx.request.body);
       if (isNaN(aid) || isNaN(cid)) {
         throw new Error('参数格式错误');
       }
@@ -36,7 +35,7 @@ class ChapterController extends Controller {
     try {
       // next 0:上一个；1:下一个；默认为1
       let { index, aid, cid, next = 1 } = ctx.request.body;
-      let newAid = -1;
+      let newCid = -1;
       if (isNaN(aid) || isNaN(cid)) {
         throw new Error('参数格式错误');
       }
@@ -82,7 +81,7 @@ class ChapterController extends Controller {
       if (content && content !== '') {
         params.content = content;
       }
-      const book = await ctx.model.Book.findOne({ index, aid });
+      const book = await ctx.model.Book.findOne({ aid });
       await ctx.model.Chapter.updateOne(
         {
           book_id: book.open_id,
