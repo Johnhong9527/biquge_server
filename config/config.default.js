@@ -23,7 +23,7 @@ module.exports = appInfo => {
     // myAppName: 'egg',
   };
   const mongoose = {
-    url: 'mongodb://127.0.0.1:27017/biquge',
+    url: 'mongodb://192.168.0.110:27017/biquge',
     options: {
       useUnifiedTopology: true,
     },
